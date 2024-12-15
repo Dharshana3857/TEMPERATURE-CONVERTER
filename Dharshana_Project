@@ -1,0 +1,82 @@
+import numpy as np
+import pandas as pd
+from scipy.stats import describe
+
+def convert_temperature(value, from_unit, to_unit):
+    """
+    Convert temperature between Celsius, Fahrenheit, and Kelvin.
+    """
+    if from_unit == to_unit:
+        return value
+
+    # Convert to Celsius
+    if from_unit == 'F':
+        value = (value - 32) * 5 / 9
+    elif from_unit == 'K':
+        value = value - 273.15
+
+    # Convert from Celsius to target unit
+    if to_unit == 'F':
+        return (value * 9 / 5) + 32
+    elif to_unit == 'K':
+        return value + 273.15
+
+    return value
+
+def batch_convert_temperature(values, from_unit, to_unit):
+    """
+    Batch convert temperatures using Pandas and NumPy for efficient computation.
+    """
+    values_array = np.array(values)  # Convert to NumPy array
+    converted_values = np.vectorize(lambda v: convert_temperature(v, from_unit, to_unit))(values_array)
+    return pd.DataFrame({'Original': values, 'Converted': converted_values})
+
+def display_statistics(values):
+    """
+    Display basic statistics using SciPy for the temperature values.
+    """
+    stats = describe(values)
+    print("\nStatistics for the Temperature Values:") 
+    print(f"Count: {stats.nobs}")
+    print(f"Mean: {stats.mean:.2f}")
+    print(f"Variance: {stats.variance:.2f}")
+    print(f"Min: {stats.minmax[0]:.2f}, Max: {stats.minmax[1]:.2f}")
+
+# Main program
+def main():
+    print("Temperature Converter")
+    print("1. Celsius to Fahrenheit")
+    print("2. Celsius to Kelvin")
+    print("3. Fahrenheit to Celsius")
+    print("4. Fahrenheit to Kelvin")
+    print("5. Kelvin to Celsius")
+    print("6. Kelvin to Fahrenheit")
+
+    try:
+        choice = int(input("Enter your choice (1-6): "))
+        num_values = int(input("How many temperatures would you like to convert? "))
+        values = [float(input(f"Enter temperature {i+1}: ")) for i in range(num_values)]
+
+        from_to_units = { 
+            1: ('C', 'F'),
+            2: ('C', 'K'),
+            3: ('F', 'C'),
+             4: ('F', 'K'),
+            5: ('K', 'C'),
+            6: ('K', 'F'),
+        }
+
+        if choice in from_to_units:
+            from_unit, to_unit = from_to_units[choice]
+            result_df = batch_convert_temperature(values, from_unit, to_unit)
+            print("\nConversion Results:")
+            print(result_df)
+            display_statistics(result_df['Converted'].values)
+        else:
+            print("Invalid choice!")
+    except ValueError:
+        print("Please enter valid inputs.")
+
+# Run the program
+if __name__ == "__main__":
+    main()
